@@ -16,7 +16,7 @@ import (
 
 func (d *DockerClient) Stop(ctx context.Context, containerId string) error {
 	// Deduce sandbox state first
-	state, err := d.DeduceSandboxState(ctx, containerId)
+	state, err := d.GetSandboxState(ctx, containerId)
 	if err == nil && state == enums.SandboxStateStopped {
 		log.Debugf("Sandbox %s is already stopped", containerId)
 		d.statesCache.SetSandboxState(ctx, containerId, enums.SandboxStateStopped)

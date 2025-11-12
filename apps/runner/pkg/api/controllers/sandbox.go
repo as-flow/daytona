@@ -360,7 +360,11 @@ func Info(ctx *gin.Context) {
 
 	runner := runner.GetInstance(nil)
 
-	info := runner.SandboxService.GetSandboxStatesInfo(ctx.Request.Context(), sandboxId)
+	info, err := runner.SandboxService.GetSandboxStatesInfo(ctx.Request.Context(), sandboxId)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
 
 	ctx.JSON(http.StatusOK, SandboxInfoResponse{
 		State:       info.SandboxState,
@@ -374,35 +378,3 @@ type SandboxInfoResponse struct {
 	BackupState enums.BackupState  `json:"backupState"`
 	BackupError *string            `json:"backupError,omitempty"`
 } //	@name	SandboxInfoResponse
-
-// RemoveDestroyed godoc
-//
-//	@Tags			sandbox
-//	@Summary		Remove a destroyed sandbox
-//	@Description	Remove a sandbox that has been previously destroyed
-//	@Produce		json
-//	@Param			sandboxId	path		string	true	"Sandbox ID"
-//	@Success		200			{string}	string	"Sandbox removed"
-//	@Failure		400			{object}	common_errors.ErrorResponse
-//	@Failure		401			{object}	common_errors.ErrorResponse
-//	@Failure		404			{object}	common_errors.ErrorResponse
-//	@Failure		409			{object}	common_errors.ErrorResponse
-//	@Failure		500			{object}	common_errors.ErrorResponse
-//	@Router			/sandboxes/{sandboxId} [delete]
-//
-//	@id				RemoveDestroyed
-func RemoveDestroyed(ctx *gin.Context) {
-	sandboxId := ctx.Param("sandboxId")
-
-	runner := runner.GetInstance(nil)
-
-	err := runner.SandboxService.RemoveDestroyedSandbox(ctx.Request.Context(), sandboxId)
-	if err != nil {
-		if !common_errors.IsNotFoundError(err) {
-			ctx.Error(err)
-			return
-		}
-	}
-
-	ctx.JSON(http.StatusOK, "Sandbox removed")
-}
